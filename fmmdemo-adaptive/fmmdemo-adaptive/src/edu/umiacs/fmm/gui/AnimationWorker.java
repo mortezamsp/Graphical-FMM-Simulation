@@ -20,7 +20,6 @@ public class AnimationWorker {
     private long interval = Constants.ANIM_INTERVAL_PLAY;
     private LayerAnimation anim = null;
     
-    
     /**
      * Utility field used by bound properties.
      */
@@ -460,6 +459,29 @@ public class AnimationWorker {
         }
         nextStep();
     }
+    public void runAnimationPotentialIntensity() throws AnimationException
+    {
+        //get fmm output
+        FmmTree fmmTree = anim.getFmmTree();
+        fmmTree.solve(anim.getU());
+        
+        for(int i = 0; i < fmmTree.getStruct().size(); i++)
+        {
+            for(Box lastlevel:fmmTree.getStruct().elementAt(i))
+            {
+                if(lastlevel.isDTreeLeaf() && lastlevel.normalized_v != -1)
+                {
+                    anim.addBlueBox(lastlevel);
+                }
+                if(lastlevel.isCForestLeaf()&& lastlevel.normalized_u != -1)
+                {
+                    anim.addRedBox(lastlevel);
+                }
+            }
+        }
+        
+        processCommandandRepaint();
+    }
     public void runAnimation() throws AnimationException{
         setStatusMessage(Constants.ANIM_STATUS_MSG_SEPARATOR);
         setStatusMessage("FMM algorithm started.\n");
@@ -470,6 +492,8 @@ public class AnimationWorker {
         runAnimationSRTranslation();
         runAnimationDownwardRecursive();
         runAnimationFinalSummation();
+        //added by dash morteza
+        runAnimationPotentialIntensity();
         setStatusMessage(Constants.ANIM_STATUS_MSG_SEPARATOR);
         setStatusMessage("FMM algorithm completed\n");
         setStatus(Constants.ANIM_STATUS_COMPLETED);

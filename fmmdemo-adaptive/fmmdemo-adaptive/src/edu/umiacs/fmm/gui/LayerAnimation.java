@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
 import java.beans.*;
+import java.io.Console;
 import java.util.*;
 /**
  *
@@ -24,9 +25,12 @@ public class LayerAnimation extends javax.swing.JPanel implements java.io.Serial
     Vector<AnimLine> lines;
     Vector<AnimCircle> circles;
     int direction;
+    Vector<edu.umiacs.fmm.Box> BlueBoxes;
+    Vector<edu.umiacs.fmm.Box> RedBoxes;
     
     int currLevel;
     FmmTree fmmTree;
+    double[] U;
     AnimationWorker aw;
     /**
      * Holds value of property state.
@@ -44,9 +48,11 @@ public class LayerAnimation extends javax.swing.JPanel implements java.io.Serial
         initComponents();
         initFields();
     }
-    
+	
     public void initFields() {
         lines = new Vector<AnimLine>();
+        BlueBoxes = new Vector<edu.umiacs.fmm.Box>();
+        RedBoxes = new Vector<edu.umiacs.fmm.Box>();
         highlightBoxes=new Vector<edu.umiacs.fmm.Box>();
         circles = new Vector<AnimCircle>();
         
@@ -83,6 +89,16 @@ public class LayerAnimation extends javax.swing.JPanel implements java.io.Serial
     }
     public void resetHighlightBoxes(){
         this.highlightBoxes=new Vector<edu.umiacs.fmm.Box>();
+        this.BlueBoxes=new Vector<edu.umiacs.fmm.Box>();
+        this.RedBoxes=new Vector<edu.umiacs.fmm.Box>();
+    }
+    //output fields
+    public void addBlueBox(edu.umiacs.fmm.Box b){
+        this.BlueBoxes.addElement(b);
+    }
+    //input fields
+    public void addRedBox(edu.umiacs.fmm.Box b){
+        this.RedBoxes.addElement(b);
     }
     public void addHighlightBox(edu.umiacs.fmm.Box b){
         this.highlightBoxes.addElement(b);
@@ -135,6 +151,14 @@ public class LayerAnimation extends javax.swing.JPanel implements java.io.Serial
     public void setFmmTree(FmmTree fmmTree){
         this.fmmTree = fmmTree;
     }
+    public double[] getU()
+    {
+        return this.U.clone();
+    }
+    public void setU(double[] u)
+    {
+        this.U = u;
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -155,6 +179,37 @@ public class LayerAnimation extends javax.swing.JPanel implements java.io.Serial
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setPaint(c);
+        
+        //morteza coloring system it is poessional
+        c = g2.getColor();
+        for (int i=0; i<BlueBoxes.size(); i++){
+            edu.umiacs.fmm.Box b = (edu.umiacs.fmm.Box)BlueBoxes.elementAt(i);
+            java.awt.Point corner = edu.umiacs.fmm.gui.Util.getBoxNECorner(b, proportion);
+            int width = (int)(b.getSize()*proportion);
+            //System.out.println(b.normalized_v);
+//            if(b.normalized_v < Constants.DEFAULT_NORMALIZED_FILEDS_THRESHOLD) 
+//                continue; //i commented this part, so some boxes remain black
+            int pixel = Math.min(255,(int)Math.ceil(b.normalized_v*192.0)+64);
+            Color X1 = new Color(64, pixel/2, pixel);
+            g2.setColor(X1);
+            if(b.normalized_v < Constants.DEFAULT_NORMALIZED_FILEDS_THRESHOLD)
+                g2.setColor(new Color(8,8,8));
+            g2.fillRect(corner.x, corner.y-1, width+1, width+1);
+        }
+        for (int i=0; i<RedBoxes.size(); i++){
+            edu.umiacs.fmm.Box b = (edu.umiacs.fmm.Box)RedBoxes.elementAt(i);
+            java.awt.Point corner = edu.umiacs.fmm.gui.Util.getBoxNECorner(b, proportion);
+            int width = (int)(b.getSize()*proportion);
+            //System.out.println(b.normalized_u);
+            Color X1 = new Color(Math.min(255,(int)Math.ceil(b.normalized_u*192.0)+64), 64, 64); //it may owerpaint red boxes
+            g2.setColor(X1);
+            if(b.normalized_u < Constants.DEFAULT_NORMALIZED_FILEDS_THRESHOLD)
+                //g2.setColor(new Color(8,8,8));
+                continue; //prevent over-coloring
+            g2.fillRect(corner.x, corner.y-1, width+1, width+1);
+        }
+        g2.setColor(c);
+        
         //g2.clearRect(0,0,550,550);
         for (int i=0; i<highlightBoxes.size(); i++){
             edu.umiacs.fmm.Box b = (edu.umiacs.fmm.Box)highlightBoxes.elementAt(i);
@@ -173,10 +228,12 @@ public class LayerAnimation extends javax.swing.JPanel implements java.io.Serial
             drawArrow(g2, line, 0.05f);
         }
         
-        for (int i=0; i<circles.size();i++){
-            AnimCircle circle = (AnimCircle)circles.elementAt(i);
-            drawCircle(g2, circle);
+        if(Constants.ANIM_SHOW_CIRCLES == 1)
+            for (int i=0; i<circles.size();i++){
+                AnimCircle circle = (AnimCircle)circles.elementAt(i);
+                drawCircle(g2, circle);
         }
+        
         
     }
     

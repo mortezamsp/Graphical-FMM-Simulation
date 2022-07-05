@@ -5,6 +5,7 @@
  */
 
 package edu.umiacs.fmm;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.util.*;
 /**
  *
@@ -18,7 +19,7 @@ public class FmmTree{
     Vector<Point> y;
     Potential potential;
     Vector<Vector<Box>> struct;
-    int q;
+    public int q = 7;
     public static final int DEFAULT_NUM_LEVEL = 3;
     int currLevel;
     long numTrans;
@@ -200,15 +201,18 @@ public class FmmTree{
         for (int l=struct.size()-1; l>=2; l--){
             for (Box b:struct.elementAt(l)){
                 if (b.isCForestLeaf()){ //black node
+                    double sumU = 0;
                     for(Point px:b.getXRecursive()){
                         Complex[] B = potential.getSCoeff(px.getCoord(), b.getCenter().getCoord());
                         double thisU = u[x.indexOf(px)];
+                        sumU += thisU;
                         for (int k=0; k<B.length; k++) {
                             B[k]=B[k].multiply(thisU);
                         }
                         b.addC(B);
                         numExp++;
                     }
+                    b.u = sumU;
                 }
                 else if (b.hasCForestChildren()) {//gray node
                     for (Box childB:b.getCForestChildren()) {
@@ -294,6 +298,58 @@ public class FmmTree{
          */
         //double[] vv = new double[y.size()];
         //System.out.println("V norm: "+Util.getError(vv, v));
+        
+        double maxv = 0;
+        double minv = 999999999;
+        double maxu = 0;
+        double minu = 999999999;
+        for(int i = 0; i < struct.size(); i++)
+        {
+            for(Box lastlevel:struct.elementAt(i))
+            {
+                if(lastlevel.isDTreeLeaf())
+                {
+                    if(lastlevel.v > maxv)
+                        maxv = lastlevel.v;
+                    if(lastlevel.v < minv)
+                        minv = lastlevel.v;
+                }
+                if(lastlevel.isCForestLeaf())
+                {
+                    if(lastlevel.u > maxu)
+                        maxu = lastlevel.u;
+                    if(lastlevel.u < minu)
+                        minu = lastlevel.u;
+                }
+            }
+        }
+        
+        //normalize w.r.t potentials are stronger whenever they are negetive
+        double tmpv = minv * -1;
+        minv = maxv * -1;
+        maxv = tmpv;
+        double tmpu = minu * -1;
+        minu = maxu * -1;
+        maxu = tmpu;
+        
+        for(int i = 0; i < struct.size(); i++)
+        {
+            for(Box lastlevel:struct.elementAt(i))
+            {
+                if(lastlevel.isDTreeLeaf())
+                {
+                    lastlevel.normalized_v = ((lastlevel.v * -1) - minv) / (maxv - minv);
+                }
+                if(lastlevel.isCForestLeaf())
+                {
+                    lastlevel.normalized_u = ((lastlevel.u * -1) - minu) / (maxu - minu);
+                }
+            }
+        }
+//        
+//        List<double[]> potentials = new ArrayList<Double[]>();
+//        potentials.add(v.clone());
+//        potentials.add(v.clone());
         return v;
     }
     // R + NearField
@@ -301,6 +357,9 @@ public class FmmTree{
         //System.out.println("solving: "+thisBox);
         if (thisBox.isDTreeLeaf()){
             //System.out.println("is leave");
+            double sumV = 0;
+            thisBox.v = 0;
+            thisBox.normalized_v = -1; // -1 means that this box hasnt incoming field. 0 means it hs minimum ncoming field;
             for (Point thisY:thisBox.getYRecursive()){
                 double regPart = 0d;
                 Complex[] d = thisBox.getD();
@@ -324,8 +383,10 @@ public class FmmTree{
                     }
                 }
                 v[y.indexOf(thisY)] = sinPart+regPart;
+                sumV = sumV + sinPart+regPart;
                 //System.out.println("Setting v["+y.indexOf(thisY)+"] to "+(sinPart+regPart));
             }
+            thisBox.v = sumV;
         }
         
         else {
@@ -513,6 +574,34 @@ public class FmmTree{
     }
     public void setPotential(Potential p){
         this.potential = p;
+    }
+    //set output intensity for all last leve boxes
+    public void CalculateOutputIntensity(double[] v)
+    {
+        //for each fmm box, find its elements outputs in vector
+        int numOfLevels = struct.size();
+        double maxV = 0;
+        for (Box lastLevelBoxes:struct.lastElement())
+        {
+            double sumV = 0;
+            Vector<Point> ys = lastLevelBoxes.getY();
+            for(int j = 0; j < ys.size(); j++)
+            {
+                int pointIndex = y.indexOf(ys.elementAt(j));
+                sumV += v[pointIndex];
+            }
+            
+            lastLevelBoxes.v = sumV;
+            if(sumV > maxV)
+                maxV = sumV;
+        }
+        for (Box lastLevelBox:struct.lastElement())
+        {
+            if(lastLevelBox.v != 0)
+            {
+                lastLevelBox.v /= maxV;
+            }
+        }
     }
 }
 

@@ -162,7 +162,7 @@ public class ComputationThread extends Thread {
      */
     public void setU(double[] u) {
         
-        this.u = u;
+        this.u = u.clone();
     }
 
     /**

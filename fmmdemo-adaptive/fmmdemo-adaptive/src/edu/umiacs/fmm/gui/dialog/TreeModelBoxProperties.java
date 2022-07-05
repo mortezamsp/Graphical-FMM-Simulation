@@ -76,6 +76,11 @@ public class TreeModelBoxProperties extends DefaultTreeModel{
                 for (Point p:y)
                     targetNode.add(new DefaultMutableTreeNode(p));
             }
+            targetNode.add(new DefaultMutableTreeNode("v = "+b.v));
+            targetNode.add(new DefaultMutableTreeNode(
+                    b.isDTreeLeaf()?"is dtree leaf":
+                    b.isCForestLeaf()?"is CFoest leaf":
+                            "is not leaf"));
         }
     }
     

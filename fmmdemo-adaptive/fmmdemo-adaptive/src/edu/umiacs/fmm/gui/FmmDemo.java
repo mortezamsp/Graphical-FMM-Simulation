@@ -7,6 +7,7 @@
 package edu.umiacs.fmm.gui;
 import edu.umiacs.fmm.*;
 import java.util.*;
+
 /**
  *
  * @author  wpwy
@@ -19,6 +20,11 @@ public class FmmDemo extends javax.swing.JFrame {
         //initFmmTree();
         this.panelStatus1.appendStatus(Constants.ANIM_STATUS_MSG_SEPARATOR);
         this.panelStatus1.appendStatus("Application initialized.\nPlease generate source and target points to proceed.\n");
+        dialogSettings1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dialogSettingsActionPerformed(evt);
+            }
+        });
     }
     
     /** This method is called from within the constructor to
@@ -185,14 +191,24 @@ public class FmmDemo extends javax.swing.JFrame {
         reinit(this.dialogClickPoints1.getSources(), this.dialogClickPoints1.getTargets(), null, dialogClickPoints1.getS());
     }//GEN-LAST:event_dialogClickPoints1ActionPerformed
     
-    private void reinit(Vector<edu.umiacs.fmm.Point> source, Vector<edu.umiacs.fmm.Point> target, Vector<Double> u, int s){
-        if (source==null&&target==null)
+    private void reinit(Vector<edu.umiacs.fmm.Point> source, Vector<edu.umiacs.fmm.Point> target, Vector<Double> u, int clusteringNumber){
+        if (source==null && target==null && clusteringNumber < 0)
             initFmmTree();
+        //whn clustering number is updated
+        else if (source==null && target==null && clusteringNumber > 0)
+        {
+            if(tree != null)
+                initFmmTree(tree.getX(), tree.getY(), clusteringNumber);
+            else
+                return;
+       }
         else
-            initFmmTree(source, target, s);
-        if (u!=null&&u.size()==source.size()){
+            initFmmTree(source, target, clusteringNumber);
+        if (u!=null && u.size()==source.size())
+        {
             //valid u, set it;
             this.computationThread1.setU(doubleVecToDoubleArr(u));
+            this.panelMain1.setU(doubleVecToDoubleArr(u));
         }
         
         this.panelMain1.doCommand("generate");
@@ -204,6 +220,7 @@ public class FmmDemo extends javax.swing.JFrame {
         this.panelToolbar1.getBtnCForest().setEnabled(false);
         this.panelToolbar1.getBtnDtree().setEnabled(true);
         this.panelMain1.doCommand("c-forest");
+        //
         this.dialogInput1.setSource(tree.getX());
         this.dialogInput1.setTarget(tree.getY());
         this.dialogInput1.setU(this.computationThread1.getU());
@@ -247,7 +264,10 @@ public class FmmDemo extends javax.swing.JFrame {
         // TODO add your handling code here:
         this.dialogSettings1.setVisible(true);
     }//GEN-LAST:event_jMenuItemSettingsActionPerformed
-    
+    private void dialogSettingsActionPerformed(java.awt.event.ActionEvent evt) {
+        //
+        reinit(null, null, null, dialogSettings1.getClusterNumber());
+    }
     private void jMenuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAboutActionPerformed
         // TODO add your handling code here:
         jMenuItemAboutActionPerformedHelper();
@@ -400,10 +420,12 @@ public class FmmDemo extends javax.swing.JFrame {
     
     private void initFmmTree() {
         Point[] x=new Point[this.dialogSettings1.getN()];
-        Point[] y=new Point[this.dialogSettings1.getN()];
+        Point[] y=new Point[this.dialogSettings1.getM()];
         //double[] u = new double[N];
         for (int i=0; i<dialogSettings1.getN(); i++) {
             x[i] = new Point(Math.random(), Math.random());
+        }
+        for (int i=0; i<dialogSettings1.getM(); i++) {
             y[i] = new Point(Math.random(), Math.random());
             //u[i] = Math.random();
         }
@@ -415,18 +437,27 @@ public class FmmDemo extends javax.swing.JFrame {
     private void initFmmTree(Point[] x, Point[] y, int q){
         //System.out.println(x.length+" "+y.length);
         Potential potential = new Potential(Constants.DEFAULT_TRUNCATION_NUMBER);
-        //int q = this.dialogSettings1.getClusterNumber();
+//        q = this.dialogSettings1.getClusterNumber();
+//        if(q < 1)
+//        {
+//            q = this.tree.q;
+//        }
         //tree = FmmTree.build(5, x, y, potential);
         tree = FmmTree.build(q, x, y, potential);
+        this.U = new double[x.length];
+        for(int i = 0; i < x.length; i++)
+            this.U[i] = Math.random();
         //System.out.println(tree.getNumOfLevels());
         this.panelMain1.setFmmTree(tree);
+        this.panelMain1.setU(U);
         
         this.panelStatus1.appendStatus(Constants.ANIM_STATUS_MSG_SEPARATOR);
         this.panelStatus1.appendStatus("Source and target points generated. (N="+x.length+", p="+dialogSettings1.getTruncationNumber()+")\n");
         this.panelStatus1.appendStatus("Using clustering parameter q: "+
                 (q>0?(q+""):(tree.getQ()+" (auto-generated)"))+"\n");
         computationThread1 = new ComputationThread(tree);
-        computationThread1.genU();
+        //computationThread1.genU();
+        computationThread1.setU(U);
     }
     private void initFmmTree(Vector<Point> x, Vector<Point> y){
         initFmmTree(x, y, this.dialogSettings1.getClusterNumber());
@@ -439,6 +470,7 @@ public class FmmDemo extends javax.swing.JFrame {
     }
     
     FmmTree tree;
+    double[] U;
     boolean animationCompleted = false;
     double computedError = -1;
     long numTransAdaptive = 0;

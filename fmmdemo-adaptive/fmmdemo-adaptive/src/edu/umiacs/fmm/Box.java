@@ -21,6 +21,10 @@ public class Box implements Comparable{
     Complex[] d;
     Vector<Point> x;
     Vector<Point> y;
+    public double v; //outputField
+    public double normalized_v; //outputField
+    public double u;    //inputField
+    public double normalized_u; //inputField
     Vector<Box> children;
     Vector<Box> dTreeChildren;
     Vector<Box> cForestChildren;
@@ -41,6 +45,8 @@ public class Box implements Comparable{
         x = new Vector<Point>();
         y = new Vector<Point>();
         c = new Complex[p];
+        v = 0;
+        normalized_v = 0;
         dtilde = new Complex[p];
         d = new Complex[p];
         for (int i=0; i<p; i++){

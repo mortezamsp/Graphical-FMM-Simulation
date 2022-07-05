@@ -49,14 +49,19 @@ public class Constants {
     public static final int ANIM_MAX_COLOR_STEPSIZE = 50;
     
     //use how many steps to animate a growing arrow.
-    public static final int ANIM_ARROW_STEPS = 10;
+    public static final int ANIM_ARROW_STEPS = 0;
     //millis between repaints.
-    public static final long ANIM_INTERVAL_PLAY = 32;
-    public static final long ANIM_INTERVAL_FF4X = 8;
+    public static final long ANIM_INTERVAL_PLAY = 4;
+    public static final long ANIM_INTERVAL_FF4X = 1;
+    
+    public static final long ANIM_SHOW_CIRCLES = 0;
     
     public static final int DEFAULT_N=100;
     public static final int DEFAULT_TRUNCATION_NUMBER=15;
     public static final int DEFAULT_CLUSTER_NUMBER = 7;
+    
+    
+    public static final double DEFAULT_NORMALIZED_FILEDS_THRESHOLD = 0.001;
     
     public static final javax.swing.ImageIcon ICON_PLAY = new javax.swing.ImageIcon(Constants.class.getResource("/edu/umiacs/fmm/gui/resources/execute16.gif"));
     

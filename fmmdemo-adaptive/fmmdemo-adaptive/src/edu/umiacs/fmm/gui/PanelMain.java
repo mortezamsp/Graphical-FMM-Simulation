@@ -107,6 +107,10 @@ public class PanelMain extends javax.swing.JPanel {
     public void setFmmTree(FmmTree fmmTree){
         this.fmmTree = fmmTree;
     }
+    public void setU(double[] u)
+    {
+        this.U = u.clone();
+    }
     
     public void doCommand(String actionCommand){
         if (actionCommand.equals("generate")){
@@ -152,6 +156,7 @@ public class PanelMain extends javax.swing.JPanel {
         anim.resetHighlightBoxes();
         anim.resetLines();
         anim.setFmmTree(fmmTree);
+        anim.setU(U);
         pointsX.setPoints(fmmTree.getX());
         pointsY.setPoints(fmmTree.getY());
         this.pointsX.repaint();
@@ -200,6 +205,7 @@ public class PanelMain extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     FmmTree fmmTree;
+    double[] U;
     
     
     /**
