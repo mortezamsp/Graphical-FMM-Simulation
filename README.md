@@ -12,4 +12,4 @@ public static final int ANIM_ARROW_STEPS = 10;
 public static final long ANIM_INTERVAL_PLAY = 32; 
 public static final long ANIM_INTERVAL_FF4X = 8;
 
-hve a look to my branch
+please have a look to my branch. I drew some diagrams of code there.
