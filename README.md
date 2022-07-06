@@ -13,3 +13,4 @@ public static final long ANIM_INTERVAL_PLAY = 32;
 public static final long ANIM_INTERVAL_FF4X = 8;
 
 please have a look to my branch. I drew some diagrams of code there.
+https://github.com/mortezamsp/Graphical-FMM-Simulation/tree/ShowFieldIntensity
