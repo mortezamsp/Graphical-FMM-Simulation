@@ -11,3 +11,5 @@ Following options control simulation speed:
 public static final int ANIM_ARROW_STEPS = 10;
 public static final long ANIM_INTERVAL_PLAY = 32; 
 public static final long ANIM_INTERVAL_FF4X = 8;
+
+hve a look to my branch
