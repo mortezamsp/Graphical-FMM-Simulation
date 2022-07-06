@@ -25,4 +25,5 @@ UPDATES:
 -- faster animation (to see output faster)
 
 
-have a look at diagrams too
+have a look at diagrams too.
+there ae 2 diagrams, one of theme is about all paths from which the "build" function of FmmTree object is called. the another one is about all entities which affect on FmmTree object. i uloaded diagrams for further improvements.
